@@ -304,3 +304,76 @@ const animationTimeline = () => {
 
 // Run fetch and animation in sequence
 fetchData();
+
+/* ---------------- Music player integration ---------------- */
+(() => {
+  const audio = document.getElementById("bg-audio");
+  const toggle = document.getElementById("music-toggle");
+  const volume = document.getElementById("music-volume");
+
+  // If audio element missing, nothing to do
+  if (!audio || !toggle || !volume) return;
+
+  // Initialize volume from control
+  audio.volume = parseFloat(volume.value) || 0.7;
+
+  // Update volume when slider changes
+  volume.addEventListener("input", e => {
+    audio.volume = parseFloat(e.target.value);
+  });
+
+  // Toggle play/pause with button; due to autoplay policies, only user gesture can start audio
+  const setPlayingState = playing => {
+    toggle.classList.toggle("playing", playing);
+    toggle.innerText = playing ? "⏸" : "▶";
+    toggle.setAttribute('aria-label', playing ? 'Pause background music' : 'Play background music');
+  };
+
+  // Try to play audio and handle promise for autoplay policies
+  const tryPlay = async () => {
+    try {
+      await audio.play();
+      setPlayingState(true);
+    } catch (err) {
+      // Play failed (autoplay blocked) — keep UI ready for user interaction
+      setPlayingState(false);
+    }
+  };
+
+  // Attach user gesture on toggle button
+  toggle.addEventListener("click", async e => {
+    if (audio.paused) {
+      await tryPlay();
+    } else {
+      audio.pause();
+      setPlayingState(false);
+    }
+  });
+
+  // If user interacts anywhere on the container, attempt to start audio once
+  const oneGesturePlayback = () => {
+    tryPlay();
+    // remove listener after first gesture
+    document.body.removeEventListener('pointerdown', oneGesturePlayback);
+  };
+  document.body.addEventListener('pointerdown', oneGesturePlayback, { once: true });
+
+  // When animation restarts, ensure audio is playing
+  const replayBtn = document.getElementById("replay");
+  if (replayBtn) {
+    replayBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        // try to play on user click
+        tryPlay();
+      }
+    });
+  }
+
+  // Handle audio load error gracefully
+  audio.addEventListener('error', () => {
+    toggle.disabled = true;
+    toggle.title = 'No audio file found (place a file at audio/song.mp3 to enable)';
+    toggle.innerText = '—';
+  });
+
+})();

@@ -5,16 +5,24 @@ html {
 body {
   margin: 0;
   font-family: "Work Sans", sans-serif;
+  /* modern gradient background */
+  background: linear-gradient(160deg, #ffecd2 0%, #fcb69f 40%, #f6a4c9 100%);
+  color: #222;
 }
 
 .container {
-  height: 100vh;
-  width: 100vh;
-  margin: 0 auto;
+  min-height: 80vh;
+  max-width: 1100px;
+  width: 95%;
+  margin: 2rem auto;
   text-align: center;
   visibility: hidden;
   position: relative;
   overflow: hidden;
+  background: rgba(255,255,255,0.65);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  padding: 2rem 1.5rem 4rem;
 }
 
 .container div.six {
@@ -38,7 +46,8 @@ body {
 }
 
 .one {
-  font-size: 4.5rem;
+  font-size: 3.5rem;
+  line-height: 1;
 }
 
 .one > img {
@@ -58,12 +67,14 @@ body {
 }
 
 .four .text-box {
-  width: 600px;
+  width: 100%;
+  max-width: 680px;
   margin: 0 auto;
-  border: 3px solid #aaa;
-  border-radius: 5px;
-  padding: 10px;
+  border: 2px solid rgba(0,0,0,0.07);
+  border-radius: 10px;
+  padding: 14px;
   position: relative;
+  background: rgba(250,250,250,0.6);
 }
 
 .text-box p {
@@ -135,6 +146,17 @@ body {
   position: absolute;
 }
 
+/* gentle floating animation for balloons */
+@keyframes floatUp {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(0deg); }
+}
+.baloons img {
+  animation: floatUp 6s ease-in-out infinite;
+  opacity: 0.95;
+}
+
 .baloons img:nth-child(even) {
   left: -10%;
 }
@@ -155,6 +177,52 @@ body {
   visibility: hidden;
   z-index: -1;
 }
+
+/* Site header and music controls */
+.site-header {
+  width: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.site-header .header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+}
+.site-title {
+  margin: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.6px;
+}
+.music-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+#music-toggle {
+  background: linear-gradient(180deg,#fff,#ffd1e6);
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+#music-toggle.playing {
+  background: linear-gradient(180deg,#c0ffd8,#8bf1c2);
+}
+#music-volume {
+  width: 110px;
+}
+
+.sr-only { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 
 .eight svg:nth-child(1) {
   top: 7vh;
@@ -259,7 +327,7 @@ body {
 
 @media screen and (max-width: 500px) {
   .container {
-    width: 90%;
+    width: 96%;
   }
 
   .four .text-box {
@@ -296,4 +364,13 @@ body {
     font-size: 1.5rem;
     font-weight: lighter;
   }
+}
+
+@media screen and (max-width: 640px) {
+  .one { font-size: 2.4rem; }
+  .three { font-size: 1.8rem; }
+  .idea-6 span { font-size: 6rem; }
+  #music-volume { width: 70px; }
+  .site-header .header-inner { padding: 0.5rem; }
+  .container { padding: 1.2rem; margin-top: 3.6rem; }
 }
