@@ -386,6 +386,10 @@ fetchData();
   let audioCtx = null;
   let synthNodes = [];
   let isSynthPlaying = false;
+  // track whether a user gesture has occurred (required to create/resume AudioContext)
+  let userGestureOccurred = false;
+  // if a melody was requested before a gesture, remember to play it after
+  let pendingPlayMelody = false;
   const sourceEl = audio ? audio.querySelector('source') : null;
   let hasSource = !!(sourceEl && sourceEl.getAttribute('src'));
 
@@ -410,13 +414,14 @@ fetchData();
   // Simple webaudio synth to play a short 'Happy Birthday' melody when no file is provided
   const ensureAudioCtx = () => {
     if (!audioCtx) {
+      // only create AudioContext after a user gesture
+      if (!userGestureOccurred) return null;
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
     return audioCtx;
   };
 
-  const playNote = (freq, start, dur) => {
-    const ctx = ensureAudioCtx();
+  const playNote = (freq, start, dur, ctx) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -433,9 +438,14 @@ fetchData();
 
   const playMelody = () => {
     if (isSynthPlaying) return;
+    // ensure we have an AudioContext before creating oscillators
+    const ctx = ensureAudioCtx();
+    if (!ctx) {
+      pendingPlayMelody = true;
+      return;
+    }
     isSynthPlaying = true;
     setPlayingState(true);
-    const ctx = ensureAudioCtx();
     const now = ctx.currentTime + 0.05;
     // Simple Happy Birthday (note frequencies in Hz)
     const notes = [392,392,440,392,523,494, // Happy birthday to you
@@ -448,7 +458,7 @@ fetchData();
                        0.36,0.18,0.54,0.54,0.54,1.0];
     let t = now;
     for (let i = 0; i < notes.length; i++) {
-      playNote(notes[i], t, durations[i]);
+      playNote(notes[i], t, durations[i], ctx);
       t += durations[i];
     }
     // mark finished
@@ -485,6 +495,14 @@ fetchData();
 
   // Attach user gesture on toggle button
   toggle.addEventListener("click", async e => {
+    // mark that a user gesture occurred so creating/resuming AudioContext is allowed
+    userGestureOccurred = true;
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try { await audioCtx.resume(); } catch (e) {}
+    } else {
+      try { ensureAudioCtx(); } catch (e) {}
+    }
+
     if (!hasSource) {
       // use synth fallback toggle
       if (!isSynthPlaying) {
@@ -503,10 +521,18 @@ fetchData();
   });
 
   // If user interacts anywhere on the container, attempt to start audio once
-  const oneGesturePlayback = () => {
+  const oneGesturePlayback = async () => {
+    userGestureOccurred = true;
     // If an AudioContext was created and is suspended, resume it on gesture.
     if (audioCtx && audioCtx.state === 'suspended') {
-      try { audioCtx.resume(); } catch (e) {}
+      try { await audioCtx.resume(); } catch (e) {}
+    } else {
+      try { ensureAudioCtx(); } catch (e) {}
+    }
+    // If a melody was requested earlier, play it now
+    if (pendingPlayMelody) {
+      pendingPlayMelody = false;
+      playMelody();
     }
     tryPlay();
   };
@@ -515,7 +541,13 @@ fetchData();
   // When animation restarts, ensure audio is playing
   const replayBtn = document.getElementById("replay");
   if (replayBtn) {
-    replayBtn.addEventListener('click', () => {
+    replayBtn.addEventListener('click', async () => {
+      userGestureOccurred = true;
+      if (audioCtx && audioCtx.state === 'suspended') {
+        try { await audioCtx.resume(); } catch (e) {}
+      } else {
+        try { ensureAudioCtx(); } catch (e) {}
+      }
       if (!hasSource) {
         // start synth on click
         playMelody();
