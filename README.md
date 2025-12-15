@@ -31,23 +31,3 @@ I've used plain HTML, CSS and JavaScript with [GSAP](https://greensock.com/gsap)
 If you have any idea to improve it or make it more interesting, feel free to send a PR, or create an issue for a feature request.
 
 Happy wishing! 🎉
- 
----
-
-## Background music
-
-You can optionally add background music that plays while the animation runs. To enable it:
-
-1. Create a new folder named `audio/` at the project root.
-2. Place an MP3 file in that folder and name it `song.mp3` (so the path is `audio/song.mp3`).
-3. Open the page in a browser and click the play button in the top-right header (or tap anywhere) to start the music — browsers require a user gesture to start audio.
-
-If no audio file is found the play button will be disabled and the page will still work normally.
-
-Local testing tip (PowerShell):
-
-```powershell
-# from project root
-python -m http.server 8000
-# then open http://localhost:8000 in your browser
-```
